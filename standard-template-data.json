@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "version": "1.2.0",
-    "generatedAt": "2026-08-25T03:51:46.247365019Z",
+    "version": "1.3.0",
+    "generatedAt": "2026-08-27T00:17:17.901364224Z",
     "templateType": "trip_c",
     "propertyId": "fccdecd4-32d8-40a1-873c-071d78e9813d",
     "homepageId": "2fe849b3-deac-4ffe-b837-c6dfa6bb2c54"
@@ -15,7 +15,9 @@
     "address": "경북 영덕군 남정면 원척1길 2-1 영덕 채움늘풀빌라",
     "latitude": 36.2977042770364,
     "longitude": 129.377983566336,
-    "contactPhone": "010-7169-8193",
+    "contactPhone": [
+      "070-4376-6451"
+    ],
     "contactEmail": "",
     "checkin": "15:00",
     "checkout": "11:00",
