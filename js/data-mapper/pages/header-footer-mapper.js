@@ -229,11 +229,11 @@
       sloganEl.textContent = '지금 바로 ' + propertyName + particle + ' 함께해 보세요.';
     }
 
-    // 업체 전화번호 (없으면 빈값) — HTML 정적 플레이스홀더 대신 JS
+    // 업체 전화번호
+    var phone = this.toPhoneList(prop.contactPhone)[0];
     var phoneEl = document.querySelector('[data-footer-phone]');
     if (phoneEl) {
-      phoneEl.textContent = prop.contactPhone
-        ? '+ ' + prop.contactPhone : '';
+      phoneEl.textContent = '+ ' + phone;
     }
 
     // 사업자 정보 (없으면 빈값) — HTML 정적 플레이스홀더 대신 JS
