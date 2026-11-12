@@ -23,6 +23,30 @@
 
 
 
+  // 백오피스가 전달한 실시간 달력 링크가 http(s) URL일 때만 푸터에 노출한다.
+  function mapFooterCalendar(data) {
+    var homepageFields = data && data.homepage && data.homepage.customFields;
+    var fields = homepageFields || (data && data.customFields) || {};
+    var raw = fields.footer && fields.footer.calendarUrl;
+    var value = typeof raw === 'string' ? raw.trim() : '';
+    var valid = false;
+    if (/^https?:\/\//i.test(value)) {
+      try {
+        var parsed = new URL(value);
+        valid = (parsed.protocol === 'http:' || parsed.protocol === 'https:') && !!parsed.hostname;
+      } catch (error) {
+        valid = false;
+      }
+    }
+    document.querySelectorAll('[data-calendar-wrap]').forEach(function (el) {
+      el.style.display = valid ? '' : 'none';
+    });
+    document.querySelectorAll('[data-calendar-link]').forEach(function (el) {
+      if (valid) el.setAttribute('href', value);
+      else el.removeAttribute('href');
+    });
+  }
+
   function HeaderFooterMapper() {
     BaseDataMapper.call(this);
   }
@@ -40,6 +64,7 @@
     this.mapRoomMenu();
     this.mapFacilityMenu();
     this.mapFooter();
+    mapFooterCalendar(this.data);
   };
 
   // MAPPER: homepage.images[0].logo[isSelected].url
@@ -94,13 +119,9 @@
                          data.homepage.customFields.pages.nearbyAttractions.sections[0] &&
                          data.homepage.customFields.pages.nearbyAttractions.sections[0].enabled) !== false;
 
-    var layoutMapEnabled = (data.homepage &&
-                            data.homepage.customFields &&
-                            data.homepage.customFields.pages &&
-                            data.homepage.customFields.pages.layoutMap &&
-                            data.homepage.customFields.pages.layoutMap.sections &&
-                            data.homepage.customFields.pages.layoutMap.sections[0] &&
-                            data.homepage.customFields.pages.layoutMap.sections[0].enabled) !== false;
+    // layout-map.html 의 404 기준과 같아야 한다 (섹션 없음 / enabled=false → 꺼짐).
+    // 섹션이 없을 때 링크를 내면 눌러도 404 로 튕긴다.
+    var layoutMapEnabled = this.isLayoutMapEnabled();
 
     // ===== TRAVEL 메뉴 처리 =====
     var travelSubmenu = document.querySelector('[data-travel-submenu]');
@@ -173,9 +194,11 @@
       var link = button.querySelector('a');
       if (link) {
         link.href = 'javascript:void(0)';
-        link.addEventListener('click', function () {
+        // addEventListener 로 쌓지 않고 덮어쓴다. 미리보기는 샘플 데이터(ybsId "YBS ID")로 먼저 그린 뒤
+        // 실제 데이터로 다시 그리는데, 쌓이면 샘플 링크(ypIdx=YBS%20ID)까지 함께 열린다
+        link.onclick = function () {
           window.open(ybs_url + ybsId, '_blank');
-        });
+        };
       }
     });
   };
@@ -334,8 +357,42 @@
     });
   };
 
+  // MAPPER: customFields.footer.ruralStayMark → [data-footer-rural-stay-mark] (전화번호 아래, 사업자 정보 위)
+  // 농어촌민박사업자 이미지가 있을 때만 노출하고, 없으면 숨겨 기존 푸터와 같다.
+  // 프리뷰는 같은 페이지에서 다시 매핑하므로 매번 표시 상태를 되돌린다.
+  HeaderFooterMapper.prototype.mapFooterRuralStayMark = function () {
+    var footer = this.getCustomFields().footer || {};
+    var footerMarks = footer;
+    var marks = Array.isArray(footerMarks.ruralStayMarks)
+      ? footerMarks.ruralStayMarks.slice(0, 2)
+      : [footerMarks.ruralStayMark];
+    var markUrl = marks.some(function (mark) { return mark && mark.url; });
+
+    document.querySelectorAll('[data-footer-rural-stay-mark-wrap]').forEach(function (wrap) {
+      wrap.style.display = markUrl ? '' : 'none';
+    });
+    document.querySelectorAll('[data-footer-rural-stay-mark-wrap]').forEach(function (wrap) {
+      var images = wrap.querySelectorAll('[data-footer-rural-stay-mark]');
+      var count = marks.filter(function (mark) { return mark && mark.url; }).length;
+      images.forEach(function (img, index) {
+        var mark = marks[index];
+        var url = mark && mark.url ? String(mark.url) : '';
+        img.style.display = url ? 'inline-block' : 'none';
+        img.style.maxWidth = count > 1 ? 'calc((100% - 12px) / 2)' : '';
+        img.style.marginLeft = index && url && marks[0] && marks[0].url ? '12px' : '';
+        if (!url) {
+          img.removeAttribute('src');
+          return;
+        }
+        img.src = url;
+        img.alt = (mark.description && String(mark.description).trim()) || '농어촌민박사업자';
+      });
+    });
+  };
+
   HeaderFooterMapper.prototype.mapFooter = function () {
     this.mapCopyright();
+    this.mapFooterRuralStayMark();
     var prop = this.getProperty();
 
     // Footer 슬로건: "지금 바로 [숙소 한글명]과/와 함께해 보세요."
