@@ -6,8 +6,15 @@
     </div>
     <!-- MAPPER: property.contactPhone -->
     <div class="tx2" data-footer-phone></div>
+    <!-- data-* 속성 : data-footer-rural-stay-mark-wrap (customFields.footer.ruralStayMarks 또는 기존 ruralStayMark 가 있을 때만 노출, 기본 숨김)
+         data-footer-rural-stay-mark : 농어촌민박사업자 이미지 (표시마크 + 신고번호, alt = description) -->
+    <div class="ruralStayMarkWrap" data-footer-rural-stay-mark-wrap style="display: none">
+      <img class="ruralStayMark" src="" alt="농어촌민박사업자" data-footer-rural-stay-mark />
+      <img class="ruralStayMark" src="" alt="농어촌민박사업자" data-footer-rural-stay-mark />
+    </div>
     <div class="tx3">
       <!-- MAPPER: property.businessInfo.* 조합 -->
+      <span data-calendar-wrap style="display: none"><a href="#" target="_blank" rel="noopener noreferrer" data-calendar-link style="color: inherit; text-decoration: underline">실시간 달력</a><br /></span>
       <span data-footer-business-info></span>
       <br /><br />
       <!-- copyright : property.tripProviderName 으로 치환 (data-copyright), 값이 없으면 아래 문구 유지 -->
